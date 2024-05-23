@@ -33,9 +33,14 @@ use Illuminate\Http\Request;
 
 Route::group(['middleware' => ['verify.shopify']], function () {
     Route::get('/', [App\Http\Controllers\OrderController::class, 'allOrders'])->name('home');
+    Route::get('orders-filter', [App\Http\Controllers\OrderController::class, 'OrdersFilter'])->name('orders.filter');
+    Route::get('sync-order', [App\Http\Controllers\OrderController::class, 'shopifyOrders'])->name('sync.orders');
 
-    Route::any('/responses', [ResponseController::class, 'index'])->name('responses');
-    Route::get('/customer_responses/{id}', [ResponseController::class, 'customer_responses'])->name('customer_responses');
+
+    Route::get('settings', [App\Http\Controllers\SettingController::class, 'Settings'])->name('settings');
+    Route::post('save-settings', [App\Http\Controllers\SettingController::class, 'SettingsSave'])->name('settings.save');
+
+
 
 });
 
@@ -48,8 +53,18 @@ Route::get('/sync_products', [ProductController::class,'sync_products'])->name('
 
 Route::get('webhooks', function (Request $request) {
 
-    return view('welcome');
     $shop = \App\Models\User::first();
+//    $orders = $shop->api()->rest('POST', '/admin/webhooks.json', [
+//
+//        "webhook" => array(
+//            "topic" => "orders/create",
+//            "format" => "json",
+//            "address" => env('APP_URL').'/webhook/order-create'
+//        )
+//    ]);
+//    dd($orders);
+
+
 
 
 
@@ -57,15 +72,19 @@ Route::get('webhooks', function (Request $request) {
     dd($webhooks);
     return response()->json($webhooks);
 })->name('webhook');
+
+
+
 Route::get('/create/webhook', function () {
     $user = \App\Models\User::first();
     $data = [
         "webhook" => [
-            "topic" => "customers/create",
-            "address" => env("APP_URL") . "/api/webhooks/customers-create",
+            "topic" => "orders/create",
+            "address" => env('APP_URL').'/webhook/order-create',
             "format" => "json",
         ]
     ];
+
     $response1 = $user->api()->rest('POST', '/admin/webhooks.json', $data, [], true);
 
     $data = [

@@ -13,7 +13,7 @@ use Osiset\ShopifyApp\Objects\Values\ShopDomain;
 class OrderCreateJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
+    public $timeout = 1000000;
     /**
      * Shop's myshopify domain
      *
@@ -49,6 +49,7 @@ class OrderCreateJob implements ShouldQueue
      */
     public function handle()
     {
+
         // Convert domain
         $this->shopDomain = ShopDomain::fromNative($this->shopDomain);
         $shop = User::where('name', $this->shopDomain->toNative())->first();

@@ -22,10 +22,10 @@ class CreateOrdersTable extends Migration
             $table->string('contact_email')->nullable();
             $table->string('current_subtotal_price')->nullable();
             $table->longText('current_subtotal_price_set')->nullable();
-            $table->string('current_total_additional_fees_set')->nullable();
+            $table->longText('current_total_additional_fees_set')->nullable();
             $table->string('current_total_discounts')->nullable();
             $table->longText('current_total_discounts_set')->nullable();
-            $table->string('current_total_duties_set')->nullable();
+            $table->longText('current_total_duties_set')->nullable();
             $table->string('current_total_price')->nullable();
             $table->longText('current_total_price_set')->nullable();
             $table->string('current_total_tax')->nullable();
@@ -37,15 +37,19 @@ class CreateOrdersTable extends Migration
             $table->longText('payment_gateway_names')->nullable();
             $table->longText('total_discounts_set')->nullable();
             $table->longText('shipping_address')->nullable();
+            $table->longText('billing_address')->nullable();
             $table->longText('shipping_lines')->nullable();
             $table->longText('discount_applications')->nullable();
+            $table->longText('line_items')->nullable();
 
             $table->longText('order_number')->nullable();
             $table->string('shipping_name')->nullable();
+            $table->string('name')->nullable();
             $table->longText('address1')->nullable();
             $table->longText('address2')->nullable();
             $table->longText('tags')->nullable();
             $table->longText('company')->nullable();
+            $table->longText('customer')->nullable();
             $table->string('city')->nullable();
             $table->string('state')->nullable();
             $table->string('zip')->nullable();
