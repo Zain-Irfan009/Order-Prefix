@@ -51,9 +51,32 @@ Route::group(['middleware' => ['verify.shopify']], function () {
 
 Route::get('/sync_products', [ProductController::class,'sync_products'])->name('sync-products');
 
+Route::get('draft-order', function (Request $request) {
+
+    $line_items = [];
+
+
+        array_push($line_items, [
+            "variant_id" => 41067054366899,
+            "quantity" => 1,
+        ]);
+
+    $shop = \App\Models\User::first();
+    $draft_order = $shop->api()->rest('put', '/admin/api/2021-10/draft_orders/969117565107.json', [
+        "draft_order" => [
+            "line_items" => $line_items,
+            "name" => '#WO-Test',
+            "note" => 'Yay33yy',
+
+        ]
+    ]);
+    dd($draft_order);
+});
 Route::get('webhooks', function (Request $request) {
 
     $shop = \App\Models\User::first();
+    $delete = $shop->api()->rest('post', '/admin/orders/5379528425651/close.json');
+dd($delete);
 //    $orders = $shop->api()->rest('POST', '/admin/webhooks.json', [
 //
 //        "webhook" => array(
@@ -86,6 +109,7 @@ Route::get('/create/webhook', function () {
     ];
 
     $response1 = $user->api()->rest('POST', '/admin/webhooks.json', $data, [], true);
+dd($response1);
 
     $data = [
         "webhook" => [

@@ -22,6 +22,7 @@ class SettingController extends Controller
         }
 
         $settings->update_prefix=isset($request->update_prefix)?$request->update_prefix:0;
+        $settings->company_ids_excluded=$request->company_ids_excluded;
         $settings->save();
         return Redirect::tokenRedirect('settings', ['notice' => 'Settings Save Successfully']);
     }
