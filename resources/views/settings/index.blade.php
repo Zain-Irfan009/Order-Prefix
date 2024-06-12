@@ -87,6 +87,7 @@
 
                                     </div>
 
+
                                     <div class="row mt-2">
                                         <div class="col-6">
                                         <label class="form-label">Companies to be excluded</label>
