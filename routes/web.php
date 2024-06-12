@@ -37,6 +37,14 @@ Route::group(['middleware' => ['verify.shopify']], function () {
     Route::get('sync-order', [App\Http\Controllers\OrderController::class, 'shopifyOrders'])->name('sync.orders');
 
 
+    Route::get('companies', [App\Http\Controllers\CompanyController::class, 'Companies'])->name('companies');
+    Route::post('add-company', [App\Http\Controllers\CompanyController::class, 'AddCompany'])->name('add.company');
+    Route::post('edit-company/{id}', [App\Http\Controllers\CompanyController::class, 'EditCompany'])->name('edit.company');
+    Route::get('delete-company/{id}', [App\Http\Controllers\CompanyController::class, 'DeleteCompany'])->name('delete.company');
+
+
+
+
     Route::get('settings', [App\Http\Controllers\SettingController::class, 'Settings'])->name('settings');
     Route::post('save-settings', [App\Http\Controllers\SettingController::class, 'SettingsSave'])->name('settings.save');
 

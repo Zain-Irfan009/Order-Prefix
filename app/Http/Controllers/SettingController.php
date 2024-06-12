@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -11,7 +12,8 @@ class SettingController extends Controller
     public function Settings(){
 
         $setting=Setting::first();
-        return view('settings.index',compact('setting'));
+        $companies=Company::all();
+        return view('settings.index',compact('setting','companies'));
     }
 
     public function SettingsSave(Request $request){
@@ -20,9 +22,12 @@ class SettingController extends Controller
         if($settings==null){
             $settings=new Setting();
         }
-
+        $ids=null;
+        if(isset($request->company_ids_excluded)){
+            $ids=implode(',',$request->company_ids_excluded);
+        }
         $settings->update_prefix=isset($request->update_prefix)?$request->update_prefix:0;
-        $settings->company_ids_excluded=$request->company_ids_excluded;
+        $settings->company_ids_excluded=$ids;
         $settings->save();
         return Redirect::tokenRedirect('settings', ['notice' => 'Settings Save Successfully']);
     }

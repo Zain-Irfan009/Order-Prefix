@@ -2,6 +2,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css"
       integrity="sha512-xmGTNt20S0t62wHLmQec2DauG9T+owP9e6VU8GigI0anN7OXLip9i7IwEhelasml2osdxX71XcYm6BQunTQeQg=="
       crossorigin="anonymous"/>
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .sync-button{
         float: right;
@@ -87,9 +89,25 @@
 
                                     <div class="row mt-2">
                                         <div class="col-6">
-                                        <label class="form-label">Company Ids to be excluded</label>
-                                        <input type="text" data-role="tagsinput" value="@if(isset($setting) && $setting->company_ids_excluded){{$setting->company_ids_excluded}}@endif"
-                                               name="company_ids_excluded" class="form-control">
+                                        <label class="form-label">Companies to be excluded</label>
+{{--                                        <input type="text" data-role="tagsinput" value="@if(isset($setting) && $setting->company_ids_excluded){{$setting->company_ids_excluded}}@endif"--}}
+{{--                                               name="company_ids_excluded" class="form-control">--}}
+                                            @php
+
+                                                $selectedIds = explode(',', $setting->company_ids_excluded);
+
+                                            @endphp
+
+                                            <select class="select2 form-control js-example-basic-multiple" name="company_ids_excluded[]" id="brand"
+                                                    data-toggle="select2" multiple="multiple" data-placeholder="Select Companies ...">
+                                                @foreach ($companies as $company)
+                                                    <option class="text-capitalize" value="{{ $company->shopify_id }}"
+                                                        {{ in_array($company->shopify_id, $selectedIds) ? 'selected' : '' }}
+                                                       >
+                                                        {{ $company->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                     </div>
 
@@ -120,9 +138,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-angular.min.js"
             integrity="sha512-KT0oYlhnDf0XQfjuCS/QIw4sjTHdkefv8rOJY5HHdNEZ6AmOh1DW/ZdSqpipe+2AEXym5D0khNu95Mtmw9VNKg=="
             crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+
         $(document).ready(function(){
 
+            $('.js-example-basic-multiple').select2();
             setTimeout(function() { $(".alert-success").hide(); }, 2000);
         });
 
