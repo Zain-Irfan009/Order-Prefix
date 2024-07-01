@@ -83,8 +83,8 @@ Route::get('draft-order', function (Request $request) {
 Route::get('webhooks', function (Request $request) {
 
     $shop = \App\Models\User::first();
-    $delete = $shop->api()->rest('post', '/admin/orders/5379528425651/close.json');
-dd($delete);
+//    $delete = $shop->api()->rest('post', '/admin/orders/5379528425651/close.json');
+//dd($delete);
 //    $orders = $shop->api()->rest('POST', '/admin/webhooks.json', [
 //
 //        "webhook" => array(

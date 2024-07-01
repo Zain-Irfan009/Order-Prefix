@@ -142,6 +142,7 @@ class OrderController extends Controller
                             $newOrder->currency = $order->currency;
                             $newOrder->total_discounts = $order->total_discounts;
                             $newOrder->shop_id = $shop->id;
+                            $newOrder->po_number = $order->po_number;
                             $newOrder->save();
                             foreach ($order->line_items as $item) {
                                 $new_line = Lineitem::where('shopify_id', $item->id)->where('order_id', $newOrder->id)->where('shop_id', $shop->id)->first();
@@ -172,85 +173,149 @@ class OrderController extends Controller
 
                             $this->fulfillmentOrders($newOrder);
 
+                            if ($newOrder->shipping_address && $newOrder->shipping_address!='null') {
+                                $get = $shop->api()->rest('put', '/admin/orders/' . $order->id . 'json', [
+                                    "order" => [
+                                        "tags" => $order->tags . ',HOLD',
+                                    ]
+                                ]);
 
-                            $cancel = $shop->api()->rest('post', '/admin/orders/' . $order->id . '/cancel.json', [
-                                'order' => [
-                                ]
-                            ]);
-                            $delete = $shop->api()->rest('delete', '/admin/orders/' . $order->id . '.json');
+                                $cancel = $shop->api()->rest('post', '/admin/orders/' . $order->id . '/cancel.json', [
+                                    'order' => [
+                                    ]
+                                ]);
+                                $delete = $shop->api()->rest('delete', '/admin/orders/' . $order->id . '.json');
 
 
-                            $line_items = json_decode($newOrder->line_items);
+                                $line_items = json_decode($newOrder->line_items);
 
 //                    dd($line_items);
 // Remove 'id' and 'admin_graphql_api_id' fields from each item in the array
-                            foreach ($line_items as &$item) {
+                                foreach ($line_items as &$item) {
 
-                                unset($item->id);
-                                unset($item->admin_graphql_api_id);
-                            }
+                                    unset($item->id);
+                                    unset($item->admin_graphql_api_id);
+                                }
 
-                            $shipping_lines = json_decode($newOrder->shipping_lines);
+                                $shipping_lines = json_decode($newOrder->shipping_lines);
 
 // Remove 'id' and 'admin_graphql_api_id' fields from each item in the array
-                            foreach ($shipping_lines as &$shipping_line) {
-                                unset($shipping_line->id);
-                                unset($shipping_line->carrier_identifier);
-                            }
+                                foreach ($shipping_lines as &$shipping_line) {
+                                    unset($shipping_line->id);
+                                    unset($shipping_line->carrier_identifier);
+                                }
 
+//old
+                                $discounts = json_decode($newOrder->discount_applications);
+                                $discount_array = array();
+                                $discount_value = 0;
+                                foreach ($discounts as $discount) {
+                                    $discount_value = $discount->value;
+                                    if (isset($discount->code)) {
+                                        $data['code'] = $discount->code;
+                                        $data['amount'] = $discount->value;
+                                        $data['type'] = $discount->value_type;
+                                        array_push($discount_array, $data);
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if (count($discount_array) == 0) {
+                                    $discounts = json_decode($newOrder->discount_codes);
+                                    $discount_array = array();
 
-                            $discounts = json_decode($newOrder->discount_applications);
-                            $discount_array = array();
-                            foreach ($discounts as $discount) {
+                                    foreach ($discounts as $discount) {
 
-                                $data['code'] = $discount->code;
-                                $data['amount'] = $discount->value;
-                                $data['type'] = $discount->value_type;
-                                array_push($discount_array, $data);
-                            }
+                                        $data['code'] = $discount->code;
+                                        $data['amount'] = $discount_value;
+                                        $data['type'] = $discount->type;
+                                        array_push($discount_array, $data);
+                                    }
+                                }
+                                $new_name = ltrim($newOrder->name, '#');
+                                if (!empty($newOrder->tags)) {
+                                    if ($newOrder->po_number) {
+                                        $get = $shop->api()->rest('post', '/admin/orders.json', [
+                                            "order" => [
+                                                "name" => '#WO-' . $new_name,
+                                                "note" => $newOrder->note,
+                                                "tags" => $newOrder->tags,
+                                                "line_items" => $line_items,
+                                                'po_number' => $newOrder->po_number,
+                                                'total_weight' => $newOrder->total_weight,
+                                                'company' => json_decode($newOrder->company),
+                                                "customer" => json_decode($newOrder->customer),
+                                                'shipping_address' => json_decode($newOrder->shipping_address),
+                                                'billing_address' => isset($newOrder->billing_address) ? json_decode($newOrder->billing_address) : json_decode($newOrder->shipping_address),
+                                                'shipping_lines' => $shipping_lines,
+                                                'discount_codes' => $discount_array
+                                            ]
+                                        ]);
+                                    } else {
+                                        $get = $shop->api()->rest('post', '/admin/orders.json', [
+                                            "order" => [
+                                                "name" => '#WO-' . $new_name,
+                                                "note" => $newOrder->note,
+                                                "tags" => $newOrder->tags,
+                                                "line_items" => $line_items,
+                                                'total_weight' => $newOrder->total_weight,
+                                                'company' => json_decode($newOrder->company),
+                                                "customer" => json_decode($newOrder->customer),
+                                                'shipping_address' => json_decode($newOrder->shipping_address),
+                                                'billing_address' => isset($newOrder->billing_address) ? json_decode($newOrder->billing_address) : json_decode($newOrder->shipping_address),
+                                                'shipping_lines' => $shipping_lines,
+                                                'discount_codes' => $discount_array
+                                            ]
+                                        ]);
+                                    }
+                                } else {
+                                    if ($newOrder->po_number) {
+                                        $get = $shop->api()->rest('post', '/admin/orders.json', [
+                                            "order" => [
+                                                "name" => '#WO-' . $new_name,
+                                                "note" => $newOrder->note,
+                                                "line_items" => $line_items,
+                                                'po_number' => $newOrder->po_number,
+                                                'total_weight' => $newOrder->total_weight,
+                                                'company' => json_decode($newOrder->company),
+                                                "customer" => json_decode($newOrder->customer),
+                                                'shipping_address' => json_decode($newOrder->shipping_address),
+                                                'billing_address' => isset($newOrder->billing_address) ? json_decode($newOrder->billing_address) : json_decode($newOrder->shipping_address),
+                                                'shipping_lines' => $shipping_lines,
+                                                'discount_codes' => $discount_array
+                                            ]
+                                        ]);
+                                    } else {
+                                        $get = $shop->api()->rest('post', '/admin/orders.json', [
+                                            "order" => [
+                                                "name" => '#WO-' . $new_name,
+                                                "note" => $newOrder->note,
+                                                "line_items" => $line_items,
+                                                'total_weight' => $newOrder->total_weight,
+                                                'company' => json_decode($newOrder->company),
+                                                "customer" => json_decode($newOrder->customer),
+                                                'shipping_address' => json_decode($newOrder->shipping_address),
+                                                'billing_address' => isset($newOrder->billing_address) ? json_decode($newOrder->billing_address) : json_decode($newOrder->shipping_address),
+                                                'shipping_lines' => $shipping_lines,
+                                                'discount_codes' => $discount_array
+                                            ]
+                                        ]);
+                                    }
+                                }
 
-                            $new_name = ltrim($newOrder->name, '#');
-                            if (!empty($newOrder->tags)) {
-                                $get = $shop->api()->rest('post', '/admin/orders.json', [
-                                    "order" => [
-                                        "name" => '#WO-' . $new_name,
-                                        "note" => $newOrder->note,
-                                        "tags" => $newOrder->tags,
-                                        "line_items" => $line_items,
-                                        'total_weight' => $newOrder->total_weight,
-                                        'company' => json_decode($newOrder->company),
-                                        "customer" => json_decode($newOrder->customer),
-                                        'shipping_address' => json_decode($newOrder->shipping_address),
-                                        'billing_address' => json_decode($newOrder->billing_address),
-                                        'shipping_lines' => $shipping_lines,
-                                        'discount_codes' => $discount_array
-                                    ]
-                                ]);
-                            } else {
-                                $get = $shop->api()->rest('post', '/admin/orders.json', [
-                                    "order" => [
-                                        "name" => '#WO-' . $new_name,
-                                        "note" => $newOrder->note,
-                                        "line_items" => $line_items,
-                                        'total_weight' => $newOrder->total_weight,
-                                        'company' => json_decode($newOrder->company),
-                                        "customer" => json_decode($newOrder->customer),
-                                        'shipping_address' => json_decode($newOrder->shipping_address),
-                                        'billing_address' => json_decode($newOrder->billing_address),
-                                        'shipping_lines' => $shipping_lines,
-                                        'discount_codes' => $discount_array
-                                    ]
-                                ]);
-                            }
+                                $log = new Log();
+                                $log->record = 'order create';
+                                $log->log = json_encode($get);
+                                $log->save();
+                                if ($get['errors'] == false) {
 
-                            if ($get['errors'] == false) {
+                                    $u_order = $get['body']['container']['order'];
 
-                                $u_order = $get['body']['container']['order'];
+                                    $newOrder->shopify_id = $u_order['id'];
+                                    $newOrder->name = $u_order['name'];
+                                    $newOrder->save();
 
-                                $newOrder->shopify_id = $u_order['id'];
-                                $newOrder->name = $u_order['name'];
-                                $newOrder->save();
-
+                                }
                             }
                         }
                     }

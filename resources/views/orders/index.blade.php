@@ -125,7 +125,7 @@
                                 <a href="{{env('TOKEN_URL').route('home')}}" type="button" class="btn btn-secondary clear_filter_data mr-1 pl-4 pr-4">Clear</a>
                             @endif
                             <button type="submit" class="btn btn-primary mr-1 pl-4 pr-4">Filter</button>
-                            <a href="{{URL::tokenRoute('sync.orders')}}" type="button" class="btn sync-button btn-primary size_button ml-1">Sync Orders</a>
+{{--                            <a href="{{URL::tokenRoute('sync.orders')}}" type="button" class="btn sync-button btn-primary size_button ml-1">Sync Orders</a>--}}
 {{--                            <a href="#"  type="button" style="display: none;float: right" class="btn export_button btn-primary size_button mx-2 ">Push Selected</a>--}}
                         </div>
                     </form>

@@ -94,9 +94,10 @@
 {{--                                        <input type="text" data-role="tagsinput" value="@if(isset($setting) && $setting->company_ids_excluded){{$setting->company_ids_excluded}}@endif"--}}
 {{--                                               name="company_ids_excluded" class="form-control">--}}
                                             @php
-
-                                                $selectedIds = explode(',', $setting->company_ids_excluded);
-
+                                                $selectedIds=null;
+                                                    if($setting){
+                                                    $selectedIds = explode(',', $setting->company_ids_excluded);
+                                                }
                                             @endphp
 
                                             <select class="select2 form-control js-example-basic-multiple" name="company_ids_excluded[]" id="brand"
